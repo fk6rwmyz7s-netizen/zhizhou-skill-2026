@@ -150,6 +150,28 @@
             opacity: 0;
             transform: translateY(10px);
         }
+        
+        /* 确保模态框在最上层 */
+        .z-50 {
+            z-index: 50;
+        }
+        
+        /* 模态框玻璃效果 */
+        .glasscard {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        /* 表单元素样式增强 */
+        input, textarea, select {
+            transition: all 0.2s ease;
+        }
+        
+        input:focus, textarea:focus, select:focus {
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
     </style>
 </head>
 <body class="min-h-screen p-4 md:p-6">
@@ -781,7 +803,7 @@
             x-transition:leave-end="opacity-0"
         >
             <div 
-                class="glass-card w-full max-w-md p-6 max-h-[90vh] overflow-y-auto"
+                class="glasscard w-full max-w-md p-6 max-h-[90vh] overflow-y-auto"
                 @click.away="showEditModal = false"
             >
                 <div class="flex justify-between items-center mb-6">
@@ -867,7 +889,101 @@
             </div>
         </div>
 
-        <!-- 发布技能模态框 -->
+        <!-- 查看用户资料模态框 -->
+        <div 
+            x-show="showViewProfileModal" 
+            class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+            x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="opacity-0"
+            x-transition:enter-end="opacity-100"
+            x-transition:leave="transition ease-in duration-200"
+            x-transition:leave-start="opacity-100"
+            x-transition:leave-end="opacity-0"
+        >
+            <div 
+                class="glasscard w-full max-w-md p-6 max-h-[90vh] overflow-y-auto"
+                @click.away="showViewProfileModal = false"
+            >
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-bold text-gray-800">用户资料</h2>
+                    <button @click="showViewProfileModal = false" class="text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+                
+                <!-- 资料内容区域 -->
+                <div x-show="!viewProfileLoading && viewedUserProfile" class="space-y-4">
+                    <div class="flex items-center mb-4">
+                        <div class="w-16 h-16 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 flex items-center justify-center text-white text-2xl font-bold">
+                            <span x-text="viewedUserProfile.username ? viewedUserProfile.username.charAt(0) : '?'"></span>
+                        </div>
+                        <div class="ml-4">
+                            <h2 class="text-xl font-bold text-gray-800" x-text="viewedUserProfile.username || '用户'"></h2>
+                            <p class="text-gray-600" x-text="viewedUserProfile.email || ''"></p>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h3 class="font-medium text-gray-700 mb-2">📍 所在城市</h3>
+                        <p x-show="viewedUserProfile.city" class="text-gray-600" x-text="viewedUserProfile.city"></p>
+                        <p x-show="!viewedUserProfile.city" class="text-gray-500 text-sm">未设置</p>
+                    </div>
+                    
+                    <div>
+                        <h3 class="font-medium text-gray-700 mb-2">🌟 我能分享</h3>
+                        <div>
+                            <span x-show="viewedUserProfile.teach_skill" class="skill-tag teach" x-text="viewedUserProfile.teach_skill"></span>
+                            <span x-show="!viewedUserProfile.teach_skill" class="text-gray-500 text-sm">未设置</span>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h3 class="font-medium text-gray-700 mb-2">📚 我想学习</h3>
+                        <div>
+                            <span x-show="viewedUserProfile.learn_skill" class="skill-tag learn" x-text="viewedUserProfile.learn_skill"></span>
+                            <span x-show="!viewedUserProfile.learn_skill" class="text-gray-500 text-sm">未设置</span>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h3 class="font-medium text-gray-700 mb-2">📝 个人简介</h3>
+                        <p x-show="viewedUserProfile.bio" class="text-gray-600 text-sm" x-text="viewedUserProfile.bio"></p>
+                        <p x-show="!viewedUserProfile.bio" class="text-gray-500 text-sm">未设置</p>
+                    </div>
+                </div>
+                
+                <!-- 加载状态 -->
+                <div x-show="viewProfileLoading" class="text-center py-8">
+                    <span class="loading-spinner"></span>
+                    <p class="text-gray-500 mt-2">正在加载用户资料...</p>
+                </div>
+                
+                <!-- 加载失败状态 -->
+                <div x-show="!viewProfileLoading && !viewedUserProfile" class="text-center py-8">
+                    <i class="fas fa-user-slash text-gray-300 text-4xl mb-4"></i>
+                    <p class="text-gray-500">无法加载用户资料</p>
+                </div>
+                
+                <div class="flex space-x-3 pt-6">
+                    <button 
+                        @click="sendMessage(viewedUserProfile.id, viewedUserProfile.username)"
+                        x-show="viewedUserProfile"
+                        class="flex-1 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-medium rounded-lg hover:from-blue-600 hover:to-blue-700 transition"
+                    >
+                        <i class="fas fa-comment mr-2"></i>发送消息
+                    </button>
+                    <button 
+                        type="button" 
+                        @click="showViewProfileModal = false"
+                        class="flex-1 py-3 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition"
+                    >
+                        关闭
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 【已修复】发布技能模态框 -->
         <div 
             x-show="showSkillModal" 
             class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
@@ -879,138 +995,134 @@
             x-transition:leave-end="opacity-0"
         >
             <div 
-                class="glass-card w-full max-w-md p-6 max-h-[90vh] overflow-y-auto"
-                @click.away="closeSkillModal()"
+                class="glasscard w-full max-w-md p-6 max-h-[90vh] overflow-y-auto"
+                @click.away="showSkillModal = false"
             >
                 <div class="flex justify-between items-center mb-6">
                     <h2 class="text-xl font-bold text-gray-800">发布技能</h2>
-                    <button @click="closeSkillModal()" class="text-gray-500 hover:text-gray-700">
+                    <button @click="showSkillModal = false" class="text-gray-500 hover:text-gray-700">
                         <i class="fas fa-times text-xl"></i>
                     </button>
                 </div>
                 
-                <form @submit.prevent="publishSkill()" class="space-y-4">
+                <form @submit.prevent="publishSkill()" class="space-y-6">
+                    <!-- 技能标题 -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">技能标题</label>
-                        <input 
-                            type="text" 
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            技能标题
+                        </label>
+                        <input
+                            type="text"
                             x-model="newSkill.title"
-                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
                             placeholder="例如：Vue.js 前端开发实战"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
                             required
                         >
                     </div>
-
+                    
+                    <!-- 技能描述 -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">技能描述</label>
-                        <textarea 
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            技能描述
+                        </label>
+                        <textarea
                             x-model="newSkill.description"
-                            rows="4"
-                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
-                            placeholder="详细描述你的技能内容、教学方式、能教什么、适合什么人群。"
+                            rows="6"
+                            placeholder="详细描述你的技能内容、教学方式、能教什么、适合什么人群..."
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition resize-none"
                             required
                         ></textarea>
-                        <div class="mt-2 text-sm text-gray-500 bg-gray-50 p-3 rounded">
-                            <h3 class="font-medium text-gray-700 mb-1">示例：</h3>
-                            <p class="mb-1 text-sm">我是专业视频剪辑师，有5年行业经验。我能教你：1. 视频剪辑基础；Premiere、Final Cut Pro软件操作；2. 剪辑技巧；镜头衔接、节奏控制、故事叙述；3. 特效制作；转场特效、文字动画、调色技术。</p>
-                            <p class="text-sm">我是专业厨师，擅长中式菜系，让家人享受美食。1. 刀工与食材处理；2. 烹饪技巧；3. 30道家常菜。</p>
-                        </div>
+                        <p class="text-sm text-gray-500 mt-2">
+                            示例：我是专业视频剪辑师，有5年行业经验。我能教你：1. 视频剪辑基础；Premiere、Final Cut Pro软件操作；2. 剪辑技巧；3. 镜头衔接、节奏控制、故事叙述；4. 特效制作；5. 转场特效、文字动画、调色技术。
+                        </p>
                     </div>
-
+                    
+                    <!-- 选择分类 -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">选择分类</label>
-                        <select 
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            选择分类
+                        </label>
+                        <select
                             x-model="newSkill.category"
                             class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
                             required
                         >
                             <option value="">请选择分类</option>
+                            <option value="语言学习">语言学习</option>
+                            <option value="视频剪辑">视频剪辑</option>
                             <option value="编程开发">编程开发</option>
                             <option value="设计创意">设计创意</option>
-                            <option value="语言学习">语言学习</option>
                             <option value="音乐艺术">音乐艺术</option>
-                            <option value="运动健身">运动健身</option>
                             <option value="生活技能">生活技能</option>
-                            <option value="商业技能">商业技能</option>
-                            <option value="学术辅导">学术辅导</option>
+                            <option value="健康运动">健康运动</option>
+                            <option value="商业金融">商业金融</option>
                             <option value="其他">其他</option>
                         </select>
                     </div>
-
+                    
+                    <!-- 教学方式 -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">技能标签</label>
-                        <input 
-                            type="text" 
-                            x-model="newSkill.tags"
-                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
-                            placeholder="例如：Vue JavaScript 前端开发（用逗号分隔）"
-                        >
-                        <div class="mt-2 text-sm text-gray-500">
-                            输入标签后按逗号分隔，例如：视频剪辑, Premiere, 后期制作
-                        </div>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">教学方式</label>
-                        <div class="flex flex-wrap gap-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            教学方式
+                        </label>
+                        <div class="flex space-x-4">
                             <label class="flex items-center">
-                                <input 
-                                    type="checkbox" 
-                                    x-model="newSkill.method"
-                                    value="线上"
-                                    class="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                <input
+                                    type="radio"
+                                    x-model="newSkill.teachingMethod"
+                                    value="在线"
+                                    class="mr-2 text-blue-600 focus:ring-blue-500"
                                 >
-                                线上
+                                <span>在线</span>
                             </label>
                             <label class="flex items-center">
-                                <input 
-                                    type="checkbox" 
-                                    x-model="newSkill.method"
+                                <input
+                                    type="radio"
+                                    x-model="newSkill.teachingMethod"
                                     value="线下"
-class="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+class="mr-2 text-blue-600 focus:ring-blue-500"
                                 >
-                                线下
+                                <span>线下</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input
+                                    type="radio"
+                                    x-model="newSkill.teachingMethod"
+                                    value="线上线下结合"
+                                    class="mr-2 text-blue-600 focus:ring-blue-500"
+                                >
+                                <span>线上线下结合</span>
                             </label>
                         </div>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">📍 城市</label>
-                        <div class="px-4 py-3 border border-gray-300 rounded-lg" :class="userProfile && userProfile.city ? 'bg-gray-50' : 'bg-red-50 border-red-300'">
-                            <span x-show="userProfile && userProfile.city" x-text="userProfile.city"></span>
-                            <span x-show="!(userProfile && userProfile.city)" class="text-red-600">您还未设置城市</span>
-                            <span class="text-gray-500 text-sm ml-2">（将自动使用您的城市信息）</span>
-                        </div>
-                        <div x-show="!(userProfile && userProfile.city)" class="mt-2 text-sm text-red-600">
-                            <i class="fas fa-exclamation-triangle mr-1"></i>
-                            请先在个人中心设置城市，否则同城筛选功能无法使用
-                        </div>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">时间安排</label>
-                        <input 
-                            type="text" 
-                            x-model="newSkill.schedule"
-                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
-                            placeholder="例如：周末、工作日晚上、灵活时间"
-                        >
                     </div>
                     
-                    <div class="flex space-x-3 pt-4">
-                        <button 
-                            type="submit" 
-                            :disabled="loading"
-                            class="flex-1 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white font-medium rounded-lg hover:from-green-600 hover:to-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    <!-- 城市 -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            城市
+                        </label>
+                        <input
+                            type="text"
+                            x-model="newSkill.city"
+                            placeholder="输入教学城市"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
                         >
-                            <span x-show="!loading">发布技能</span>
-                            <span x-show="loading" class="flex items-center justify-center">
-                                <span class="loading-spinner mr-2"></span>发布中...
-                            </span>
+                        <p class="text-sm text-gray-500 mt-2">
+                            如果选择在线教学，可以不填写城市
+                        </p>
+                    </div>
+                    
+                    <!-- 操作按钮 -->
+                    <div class="flex space-x-3 pt-4">
+                        <button
+                            type="submit"
+                            class="flex-1 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white font-medium rounded-lg hover:from-green-600 hover:to-green-700 transition"
+                        >
+                            <i class="fas fa-paper-plane mr-2"></i>发布技能
                         </button>
-                        <button 
-                            type="button" 
-                            @click="closeSkillModal()"
+                        <button
+                            type="button"
+                            @click="showSkillModal = false"
                             class="flex-1 py-3 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition"
                         >
                             取消
@@ -1100,17 +1212,23 @@ class="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                     bio: ''
                 },
                 
+                // 更新 newSkill 对象以匹配修复后的模态框
                 newSkill: {
                     title: '',
                     description: '',
                     category: '',
-                    tags: '',
-                    method: [],
-                    schedule: ''
+                    teachingMethod: '在线', // 修改：将 method 改为 teachingMethod
+                    city: ''
                 },
                 
                 showEditModal: false,
                 showSkillModal: false,
+                
+                // ======== 【新增的变量】 ========
+                showViewProfileModal: false,        // 控制查看资料弹窗显示
+                viewProfileLoading: false,          // 查看资料加载状态
+                viewedUserProfile: null,            // 存储查看的用户资料
+                // ====================================
                 
                 showSameCityOnly: false,
                 
@@ -1134,6 +1252,51 @@ class="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                 
                 // 新增：存储已删除的对话ID
                 deletedConversations: [],
+                
+                // ============ 修复后的viewProfile函数 ============
+                async viewProfile(userId) {
+                    console.log('查看用户资料，用户ID:', userId);
+                    
+                    if (!userId) {
+                        this.showNotification('error', '错误', '无法获取用户信息');
+                        return;
+                    }
+                    
+                    this.viewProfileLoading = true;
+                    this.showViewProfileModal = true;
+                    this.viewedUserProfile = null;
+                    
+                    try {
+                        // 1. 从Supabase获取用户资料
+                        const { data, error } = await this.supabase
+                            .from('profiles')
+                            .select('*')
+                            .eq('id', userId)
+                            .single();
+                        
+                        if (error) {
+                            console.error('获取用户资料失败:', error);
+                            // 尝试从本地匹配列表中查找（备用方案）
+                            const localMatch = this.matches.find(match => match.id === userId);
+                            if (localMatch) {
+                                this.viewedUserProfile = localMatch;
+                                this.showNotification('info', '资料加载', `已显示 ${localMatch.username} 的基本信息`);
+                            } else {
+                                throw new Error('未找到该用户资料');
+                            }
+                        } else {
+                            // 成功从数据库获取
+                            this.viewedUserProfile = data;
+                            console.log('成功加载用户资料:', data);
+                        }
+                        
+                    } catch (error) {
+                        console.error('查看资料过程中出错:', error);
+                        this.showNotification('error', '加载失败', '无法加载用户详细资料，可能该用户尚未完善信息。');
+                    } finally {
+                        this.viewProfileLoading = false;
+                    }
+                },
                 
                 // ============ 新增函数 ============
                 
@@ -1653,26 +1816,21 @@ class="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                         this.showNotification('warning', '请先登录', '登录后才能发布技能');
                         return;
                     }
+                    // 预填充当前用户的城市
+                    if (this.userProfile && this.userProfile.city) {
+                        this.newSkill.city = this.userProfile.city;
+                    }
                     this.showSkillModal = true;
                 },
                 
-                closeSkillModal() {
-                    this.showSkillModal = false;
-                    this.resetSkillForm();
-                },
-                
-                resetSkillForm() {
-                    this.newSkill = {
-                        title: '',
-                        description: '',
-                        category: '',
-                        tags: '',
-                        method: [],
-                        schedule: ''
-                    };
-                },
-                
+                // 修改 publishSkill 函数以适配修复后的模态框
                 async publishSkill() {
+                    if (!this.currentUser) {
+                        this.showNotification('warning', '请先登录', '登录后才能发布技能');
+                        return;
+                    }
+                    
+                    // 验证必填字段
                     if (!this.newSkill.title.trim()) {
                         this.showNotification('error', '请输入技能标题', '技能标题不能为空');
                         return;
@@ -1688,56 +1846,32 @@ class="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                         return;
                     }
                     
-                    if (!this.userProfile || !this.userProfile.city) {
-                        this.showNotification('warning', '请先设置城市', '请先在个人中心设置您的城市，否则同城筛选功能无法使用');
-                        this.closeSkillModal();
-                        this.activeTab = 'profile';
-                        this.showEditModal = true;
-                        return;
-                    }
-                    
                     this.loading = true;
                     
                     try {
-                        let methodString = '';
-                        if (Array.isArray(this.newSkill.method)) {
-                            methodString = this.newSkill.method.join(',');
-                        } else if (typeof this.newSkill.method === 'string') {
-                            methodString = this.newSkill.method;
-                        }
-                        
-                        let tagsArray = [];
-                        if (this.newSkill.tags && this.newSkill.tags.trim()) {
-                            tagsArray = this.newSkill.tags
-                                .split(/[,，\s]+/)
-                                .map(tag => tag.trim())
-                                .filter(tag => tag && tag.length > 0)
-                                .slice(0, 5);
-                        }
-                        
+                        // 构建技能数据 - 适配修复后的表单字段
                         const skillData = {
                             user_id: this.currentUser.id,
-                            author: this.userProfile.username || this.currentUser.email || '匿名用户',
+                           author: this.userProfile.username || this.currentUser.email.split('@')[0] || '匿名用户',
                             title: this.newSkill.title.trim(),
                             description: this.newSkill.description.trim(),
                             category: this.newSkill.category,
-                            city: this.userProfile.city || '',
-                            tags: tagsArray,
-                            method: methodString || '线上教学',
-                            schedule: this.newSkill.schedule || '时间灵活',
+                            method: this.newSkill.teachingMethod || '在线',
+                            city: this.newSkill.city || (this.userProfile && this.userProfile.city) || '未设置',
                             created_at: new Date().toISOString(),
                             updated_at: new Date().toISOString()
                         };
                         
-                        console.log('发布技能数据（包含城市）:', skillData);
+                        console.log('准备发布的技能数据:', skillData);
                         
+                        // 保存到Supabase
                         const { data, error } = await this.supabase
                             .from('skills')
                             .insert([skillData])
                             .select();
                         
                         if (error) {
-                            console.error('发布失败:', error);
+                            console.error('发布技能失败:', error);
                             
                             if (error.code === '42501') {
                                 this.showNotification('error', '权限不足', '请确认您已登录');
@@ -1749,24 +1883,38 @@ class="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                             return;
                         }
                         
-                        console.log('技能发布成功:', data);
+                        console.log('✅ 技能发布成功:', data);
                         
-                        await this.updateUserTeachSkills(skillData.title);
+                        // 清空表单
+                        this.newSkill = {
+                            title: '',
+                            description: '',
+                            category: '',
+                            teachingMethod: '在线',
+                            city: ''
+                        };
                         
-                        this.closeSkillModal();
+                        // 关闭模态框
+                        this.showSkillModal = false;
                         
-                        await this.loadSkills();
-                        
+                        // 显示成功通知
                         this.showNotification('success', '发布成功', '技能已成功发布！');
                         
+                        // 刷新技能列表
+                        await this.loadSkills();
+                        
+                        // 更新用户的分享技能
+                        await this.updateUserTeachSkills(skillData.title);
+                        
                     } catch (error) {
-                        console.error('发布技能异常:', error);
+                        console.error('发布技能过程中出现异常:', error);
                         this.showNotification('error', '发布失败', '发布技能时出现异常，请稍后重试');
                     } finally {
                         this.loading = false;
                     }
                 },
                 
+                // 更新用户分享技能的函数
                 async updateUserTeachSkills(newSkill) {
                     if (!this.userProfile || !this.currentUser) return;
                     
@@ -1969,7 +2117,7 @@ class="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                         const beforeFilterCount = filtered.length;
                         
                         filtered = filtered.filter(skill => {
-if (!skill.city) {
+                            if (!skill.city) {
                                 console.log('技能无城市信息:', skill.title);
                                 return false;
                             }
@@ -2413,10 +2561,6 @@ if (!skill.city) {
                         this.conversations.unshift(newConversation);
                         this.selectConversation(newConversation.id);
                     }
-                },
-                
-                viewProfile(userId) {
-                    this.showNotification('info', '查看资料', '正在加载用户资料...');
                 },
                 
                 async contactSkillOwner(skill) {
