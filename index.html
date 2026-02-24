@@ -200,11 +200,19 @@
             display: inline-block;
             margin: 8px;
         }
+        
+        /* 评价卡片内容截断 */
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
     </style>
 </head>
 <body class="min-h-screen p-4 md:p-6">
     <div class="max-w-6xl mx-auto">
-        <!-- ===================== 导航栏（完全保留原样）===================== -->
+        <!-- ===================== 导航栏（学习搭子按钮已加入）===================== -->
         <nav class="glass-card p-4 mb-6 flex justify-between items-center" x-show="isAuthenticated">
             <div class="flex items-center space-x-4">
                 <div class="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold">知</div>
@@ -214,10 +222,13 @@
                 </div>
             </div>
             <div class="flex items-center space-x-4">
+                <!-- 新增：学习搭子按钮（放在个人中心之前） -->
+                <button @click="activeTab = 'buddies'" :class="activeTab === 'buddies' ? 'text-blue-600 font-medium' : 'text-gray-600'">
+                    <i class="fas fa-users mr-2"></i>学习搭子
+                </button>
                 <button @click="activeTab = 'profile'" :class="activeTab === 'profile' ? 'text-blue-600 font-medium' : 'text-gray-600'"><i class="fas fa-user mr-2"></i>个人中心</button>
                 <button @click="activeTab = 'explore'" :class="activeTab === 'explore' ? 'text-blue-600 font-medium' : 'text-gray-600'"><i class="fas fa-search mr-2"></i>技能探索</button>
                 <button @click="activeTab = 'community'" :class="activeTab === 'community' ? 'text-blue-600 font-medium' : 'text-gray-600'"><i class="fas fa-users mr-2"></i>社区活动</button>
-                <!-- 新增：精彩时刻导航 -->
                 <button @click="activeTab = 'moments'" :class="activeTab === 'moments' ? 'text-blue-600 font-medium' : 'text-gray-600'"><i class="fas fa-camera mr-2"></i>精彩时刻</button>
                 <button @click="activeTab = 'messages'" :class="activeTab === 'messages' ? 'text-blue-600 font-medium' : 'text-gray-600'"><i class="fas fa-comments mr-2"></i>消息<span x-show="unreadCount > 0" class="ml-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center"><span x-text="unreadCount"></span></span></button>
                 <button @click="logout" class="text-gray-600 hover:text-red-600"><i class="fas fa-sign-out-alt mr-2"></i>退出</button>
@@ -258,14 +269,16 @@
         <!-- ===================== 已登录状态 ===================== -->
         <div x-show="isAuthenticated" x-transition>
             
-            <!-- ===================== 个人中心（保留原有+新增评价入口）===================== -->
+            <!-- ===================== 个人中心（保留原有+新增我的搭子标签）===================== -->
             <div x-show="activeTab === 'profile'" x-transition>
                 <!-- 子标签导航 -->
                 <div class="flex space-x-4 mb-6 border-b">
                     <button @click="profileSubTab = 'info'" :class="profileSubTab === 'info' ? 'border-b-2 border-blue-500 text-blue-600 font-medium' : 'text-gray-600'" class="pb-3 px-2">个人资料</button>
                     <button @click="profileSubTab = 'favorites'; loadFavorites()" :class="profileSubTab === 'favorites' ? 'border-b-2 border-blue-500 text-blue-600 font-medium' : 'text-gray-600'" class="pb-3 px-2"><i class="fas fa-star mr-1"></i>我的收藏</button>
-                    <!-- 新增：我的评价标签 -->
+                    <!-- 新增：我的评价标签（保留不变） -->
                     <button @click="profileSubTab = 'reviews'; loadMyReviews()" :class="profileSubTab === 'reviews' ? 'border-b-2 border-blue-500 text-blue-600 font-medium' : 'text-gray-600'" class="pb-3 px-2"><i class="fas fa-thumbs-up mr-1"></i>我的评价</button>
+                    <!-- 新增：我的搭子标签 -->
+                    <button @click="profileSubTab = 'myBuddies'" :class="profileSubTab === 'myBuddies' ? 'border-b-2 border-blue-500 text-blue-600 font-medium' : 'text-gray-600'" class="pb-3 px-2"><i class="fas fa-user-friends mr-1"></i>我的搭子</button>
                 </div>
 
                 <!-- 个人资料子页面（保留原有+新增评分展示） -->
@@ -390,7 +403,7 @@
                     </div>
                 </div>
 
-                <!-- 我的收藏（完全保留原有，修复数据错乱） -->
+                <!-- 我的收藏（完全保留原有） -->
                 <div x-show="profileSubTab === 'favorites'" x-transition>
                     <div class="glass-card p-6">
                         <h2 class="text-xl font-bold text-gray-800 mb-6"><i class="fas fa-star text-yellow-400 mr-2"></i>我收藏的技能</h2>
@@ -442,7 +455,7 @@
                     </div>
                 </div>
 
-                <!-- 新增：我的评价页面 -->
+                <!-- 我的评价子页面（保留不变，用于自己查看收到的评价） -->
                 <div x-show="profileSubTab === 'reviews'" x-transition>
                     <div class="glass-card p-6">
                         <h2 class="text-xl font-bold text-gray-800 mb-6"><i class="fas fa-thumbs-up text-blue-500 mr-2"></i>我收到的评价</h2>
@@ -481,6 +494,46 @@
                                     </div>
                                     <div class="mt-3 pt-3 border-t text-xs text-gray-500">
                                         评价场景：<span x-text="review.context_type === 'skill_exchange' ? '技能交换' : review.context_type === 'event' ? '社区活动' : '视频教室'"></span>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 我的搭子页面（展示收藏的搭子帖子） -->
+                <div x-show="profileSubTab === 'myBuddies'" x-transition>
+                    <div class="glass-card p-6">
+                        <h2 class="text-xl font-bold text-gray-800 mb-6"><i class="fas fa-star text-yellow-400 mr-2"></i>我收藏的搭子</h2>
+                        <div x-show="savedBuddiesList.length === 0" class="text-center py-12">
+                            <i class="far fa-star text-gray-300 text-4xl mb-4"></i>
+                            <p class="text-gray-500">暂无收藏的搭子</p>
+                            <p class="text-gray-400 text-sm mt-2">在“学习搭子”页面点击星星收藏你感兴趣的搭子</p>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" x-show="savedBuddiesList.length > 0">
+                            <template x-for="buddy in savedBuddiesList" :key="buddy.id">
+                                <div class="border border-gray-200 rounded-lg p-5 hover:shadow-lg transition">
+                                    <div class="flex items-center gap-3 mb-3">
+                                        <template x-if="buddy.avatar_url">
+                                            <img :src="buddy.avatar_url" class="w-10 h-10 rounded-full object-cover">
+                                        </template>
+                                        <template x-else>
+                                            <div class="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold" x-text="buddy.username?.charAt(0) || '?'"></div>
+                                        </template>
+                                        <div>
+                                            <h3 class="font-bold text-gray-800" x-text="buddy.username"></h3>
+                                            <p class="text-xs text-gray-500" x-text="formatTimeAgo(buddy.created_at)"></p>
+                                        </div>
+                                    </div>
+                                    <div class="mb-2">
+                                        <span class="inline-block px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm mr-2" x-text="buddy.goal"></span>
+                                        <span class="inline-block px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-sm" x-text="buddy.mode"></span>
+                                    </div>
+                                    <p class="text-gray-600 text-sm mb-2"><i class="far fa-clock mr-1"></i><span x-text="buddy.time_slot"></span></p>
+                                    <p x-show="buddy.city" class="text-gray-500 text-sm mb-4"><i class="fas fa-map-marker-alt mr-1"></i><span x-text="buddy.city"></span></p>
+                                    <div class="flex gap-2">
+                                        <button @click="contactBuddy(buddy)" class="flex-1 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg text-sm">联系搭子</button>
+                                        <button @click="toggleSaveBuddy(buddy)" class="px-3 py-2 border rounded-lg text-gray-600" title="取消收藏"><i class="fas fa-star text-yellow-500"></i></button>
                                     </div>
                                 </div>
                             </template>
@@ -797,9 +850,96 @@
                     </div>
                 </div>
             </div>
+
+            <!-- ===================== 学习搭子主页面（已按讨论修改）===================== -->
+            <div x-show="activeTab === 'buddies'" x-transition>
+                <div class="glass-card p-6 mb-6">
+                    <div class="flex justify-between items-center">
+                        <h2 class="text-xl font-bold text-gray-800">📚 学习搭子</h2>
+                        <button @click="showBuddyModal = true" class="px-5 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white font-medium rounded-lg hover:from-green-600 hover:to-green-700 transition flex items-center">
+                            <i class="fas fa-plus mr-2"></i>发布搭子
+                        </button>
+                    </div>
+                    <!-- 新增标语 -->
+                    <p class="text-gray-600 mt-2 mb-4 italic">一个人学得快，一群人学得远</p>
+                    
+                    <!-- 筛选栏：搜索框 + 目标 + 方式 + 同城（无清空按钮） -->
+                    <div class="flex flex-wrap items-center gap-3 mt-2">
+                        <!-- 搜索框（左侧，flex-1） -->
+                        <div class="flex-1 min-w-[200px]">
+                            <input type="text" x-model="buddySearchInput" @input.debounce.300ms="buddySearchKeyword = buddySearchInput; filterBuddies()" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition" placeholder="搜索目标、城市或关键词">
+                        </div>
+                        <!-- 目标下拉框 -->
+                        <select x-model="buddyGoalFilter" @change="filterBuddies" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition">
+                            <option value="">目标</option>
+                            <option value="考研">考研</option>
+                            <option value="英语">英语</option>
+                            <option value="考公">考公</option>
+                            <option value="编程">编程</option>
+                            <option value="其他">其他</option>
+                        </select>
+                        <!-- 方式下拉框 -->
+                        <select x-model="buddyModeFilter" @change="filterBuddies" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition">
+                            <option value="">方式</option>
+                            <option value="线上">线上</option>
+                            <option value="线下">线下</option>
+                            <option value="均可">均可</option>
+                        </select>
+                        <!-- 同城开关（点击高亮） -->
+                        <button @click="toggleSameCityBuddy" :class="sameCityActive ? 'bg-blue-600 text-white border-blue-600' : 'border-gray-300 text-gray-700 hover:bg-gray-50'" class="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition flex items-center">
+                            <i class="fas fa-map-marker-alt mr-2"></i> 同城
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 搭子列表 -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <template x-for="buddy in filteredBuddies" :key="buddy.id">
+                        <div class="glass-card p-5 hover:shadow-lg transition">
+                            <div class="flex items-center gap-3 mb-3">
+                                <template x-if="buddy.avatar_url">
+                                    <img :src="buddy.avatar_url" class="w-10 h-10 rounded-full object-cover">
+                                </template>
+                                <template x-else>
+                                    <div class="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold" x-text="buddy.username?.charAt(0) || '?'"></div>
+                                </template>
+                                <div>
+                                    <h3 class="font-bold text-gray-800" x-text="buddy.username"></h3>
+                                    <p class="text-xs text-gray-500" x-text="formatTimeAgo(buddy.created_at)"></p>
+                                </div>
+                            </div>
+                            <div class="mb-2">
+                                <span class="inline-block px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm mr-2" x-text="buddy.goal"></span>
+                                <span class="inline-block px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-sm" x-text="buddy.mode"></span>
+                            </div>
+                            <p class="text-gray-600 text-sm mb-2">
+                                <i class="far fa-clock mr-1"></i><span x-text="buddy.time_slot"></span>
+                            </p>
+                            <p x-show="buddy.city" class="text-gray-500 text-sm mb-4">
+                                <i class="fas fa-map-marker-alt mr-1"></i><span x-text="buddy.city"></span>
+                            </p>
+                            <div class="flex gap-2">
+                                <button @click="contactBuddy(buddy)" class="flex-1 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-medium rounded-lg hover:from-blue-600 hover:to-blue-700 transition text-sm">
+                                    <i class="fas fa-comment mr-1"></i>联系搭子
+                                </button>
+                                <button @click="toggleSaveBuddy(buddy)" class="px-3 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50 transition">
+                                    <i :class="isSaved(buddy.id) ? 'fas fa-star text-yellow-500' : 'far fa-star'"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- 空状态 -->
+                <div x-show="filteredBuddies.length === 0" class="text-center py-12">
+                    <i class="fas fa-users text-gray-300 text-4xl mb-4"></i>
+                    <p class="text-gray-500">暂无学习搭子信息</p>
+                    <p class="text-gray-400 text-sm mt-2">点击“发布搭子”成为第一个发起者</p>
+                </div>
+            </div>
         </div>
 
-        <!-- ===================== 所有模态框（保留原有+新增）===================== -->
+        <!-- ===================== 所有模态框（包括新增的）===================== -->
         
         <!-- 编辑资料模态框（完全保留） -->
         <div x-show="showEditModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50" x-transition>
@@ -817,11 +957,12 @@
             </div>
         </div>
 
-        <!-- 查看用户资料模态框（完全保留+新增评分展示，删除评价按钮） -->
+        <!-- ===================== 查看用户资料模态框（已修改：评分移至头像下方+近期评价区块）===================== -->
         <div x-show="showViewProfileModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50" x-transition>
-            <div class="glasscard w-full max-w-md p-6" @click.away="showViewProfileModal = false">
+            <div class="glasscard w-full max-w-md p-6 max-h-[90vh] overflow-y-auto" @click.away="showViewProfileModal = false">
                 <div class="flex justify-between items-center mb-6"><h2 class="text-xl font-bold text-gray-800">用户资料</h2><button @click="showViewProfileModal = false" class="text-gray-500 hover:text-gray-700"><i class="fas fa-times text-xl"></i></button></div>
                 <div x-show="!viewProfileLoading && viewedUserProfile" class="space-y-4">
+                    <!-- 头像区域 + 评分（紧挨用户名） -->
                     <div class="flex items-center mb-4">
                         <template x-if="viewedUserProfile?.avatar_url">
                             <img :src="viewedUserProfile.avatar_url" class="w-16 h-16 rounded-full object-cover" alt="avatar">
@@ -829,27 +970,65 @@
                         <template x-else>
                             <div class="w-16 h-16 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 flex items-center justify-center text-white text-2xl font-bold"><span x-text="viewedUserProfile?.username?.charAt(0) || '?'"></span></div>
                         </template>
-                        <div class="ml-4">
-                            <div class="flex items-center gap-2">
+                        <div class="ml-4 flex-1">
+                            <div class="flex items-center gap-2 flex-wrap">
                                 <h2 class="text-xl font-bold text-gray-800" x-text="viewedUserProfile?.username || '用户'"></h2>
+                                <!-- 评分显示 -->
+                                <span x-show="viewedUserProfile?.overall_rating > 0" class="flex items-center text-sm text-yellow-500">
+                                    <i class="fas fa-star mr-1"></i>
+                                    <span x-text="viewedUserProfile?.overall_rating?.toFixed(1)"></span>
+                                    <span class="text-gray-500 ml-1">(<span x-text="viewedUserProfile?.total_reviews"></span>条)</span>
+                                </span>
+                                <!-- 信誉徽章（如果有） -->
                                 <span x-show="viewedUserProfile?.overall_rating >= 4.5" class="trust-badge text-xs"><i class="fas fa-crown"></i></span>
                             </div>
-                            <p class="text-gray-600" x-text="viewedUserProfile?.email || ''"></p>
-                            <div class="flex items-center mt-1" x-show="viewedUserProfile?.overall_rating > 0">
-                                <span class="text-yellow-500 text-sm"><i class="fas fa-star"></i> <span x-text="viewedUserProfile?.overall_rating?.toFixed(1)"></span></span>
-                                <span class="text-gray-500 text-sm ml-2">(<span x-text="viewedUserProfile?.total_reviews"></span>条评价)</span>
-                            </div>
+                            <p class="text-gray-600 text-sm" x-text="viewedUserProfile?.email || ''"></p>
                         </div>
                     </div>
+
+                    <!-- 基础信息 -->
                     <div><h3 class="font-medium text-gray-700 mb-2">📍 所在城市</h3><p x-show="viewedUserProfile?.city" class="text-gray-600" x-text="viewedUserProfile?.city"></p><p x-show="!viewedUserProfile?.city" class="text-gray-500 text-sm">未设置</p></div>
                     <div><h3 class="font-medium text-gray-700 mb-2">🌟 我能分享</h3><div><span x-show="viewedUserProfile?.teach_skill" class="skill-tag teach" x-text="viewedUserProfile?.teach_skill"></span><span x-show="!viewedUserProfile?.teach_skill" class="text-gray-500 text-sm">未设置</span></div></div>
                     <div><h3 class="font-medium text-gray-700 mb-2">📚 我想学习</h3><div><span x-show="viewedUserProfile?.learn_skill" class="skill-tag learn" x-text="viewedUserProfile?.learn_skill"></span><span x-show="!viewedUserProfile?.learn_skill" class="text-gray-500 text-sm">未设置</span></div></div>
                     <div><h3 class="font-medium text-gray-700 mb-2">📝 个人简介</h3><p x-show="viewedUserProfile?.bio" class="text-gray-600 text-sm" x-text="viewedUserProfile?.bio"></p><p x-show="!viewedUserProfile?.bio" class="text-gray-500 text-sm">未设置</p></div>
                     
-                    <!-- 新增：查看评价按钮 -->
-                    <div x-show="viewedUserProfile?.total_reviews > 0" class="pt-4 border-t">
-                        <button @click="viewUserReviews(viewedUserProfile.id)" class="w-full py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">
-                            <i class="fas fa-comments mr-2"></i>查看全部评价 (<span x-text="viewedUserProfile?.total_reviews"></span>)
+                    <!-- ========== 新增：近期评价区块 ========== -->
+                    <div x-show="viewedUserProfile?.total_reviews > 0" class="mt-4 border-t pt-4">
+                        <h3 class="font-medium text-gray-700 mb-3 flex items-center">
+                            <i class="fas fa-star text-yellow-400 mr-1"></i>近期评价
+                        </h3>
+                        <div class="space-y-3">
+                            <template x-for="review in recentReviews" :key="review.id">
+                                <div class="flex items-start gap-3">
+                                    <!-- 评价人头像 -->
+                                    <template x-if="!review.is_anonymous && review.reviewer?.avatar_url">
+                                        <img :src="review.reviewer.avatar_url" class="w-8 h-8 rounded-full object-cover">
+                                    </template>
+                                    <template x-else>
+                                        <div class="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-white text-xs font-bold">
+                                            <span x-text="review.is_anonymous ? '匿' : (review.reviewer?.username?.charAt(0) || '?')"></span>
+                                        </div>
+                                    </template>
+                                    <div class="flex-1">
+                                        <div class="flex justify-between items-center">
+                                            <p class="text-sm font-medium" x-text="review.is_anonymous ? '匿名用户' : review.reviewer?.username"></p>
+                                            <div class="flex text-yellow-400 text-xs">
+                                                <template x-for="i in 5">
+                                                    <i :class="i <= review.overall_rating ? 'fas fa-star' : 'far fa-star'"></i>
+                                                </template>
+                                            </div>
+                                        </div>
+                                        <p class="text-xs text-gray-500" x-text="formatTimeAgo(review.created_at)"></p>
+                                        <p class="text-sm text-gray-700 mt-1 line-clamp-2" x-text="review.content || '用户未留下文字评价'"></p>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                        <!-- 查看全部按钮（如果总评价数 > 3） -->
+                        <button x-show="viewedUserProfile?.total_reviews > 3" 
+                                @click="loadAllReviews(viewedUserProfile.id); showAllReviews = true" 
+                                class="mt-2 text-sm text-blue-600 hover:text-blue-800">
+                            查看全部 <span x-text="viewedUserProfile.total_reviews"></span> 条评价 →
                         </button>
                     </div>
                 </div>
@@ -858,6 +1037,47 @@
                 <div class="flex space-x-3 pt-6">
                     <button @click="sendMessage(viewedUserProfile?.id, viewedUserProfile?.username)" x-show="viewedUserProfile" class="flex-1 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-medium rounded-lg hover:from-blue-600 hover:to-blue-700 transition"><i class="fas fa-comment mr-2"></i>发送消息</button>
                     <button type="button" @click="showViewProfileModal = false" class="flex-1 py-3 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition">关闭</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===================== 新增：全部评价模态框 ===================== -->
+        <div x-show="showAllReviews" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50" x-transition>
+            <div class="glasscard w-full max-w-lg p-6 max-h-[80vh] overflow-y-auto" @click.away="showAllReviews = false">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-bold">全部评价 · <span x-text="viewedUserProfile?.username || ''"></span></h3>
+                    <button @click="showAllReviews = false" class="text-gray-500 hover:text-gray-700"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="space-y-4">
+                    <template x-if="allReviews.length === 0">
+                        <p class="text-center text-gray-500 py-8">暂无评价</p>
+                    </template>
+                    <template x-for="review in allReviews" :key="review.id">
+                        <div class="border-b pb-4 last:border-0">
+                            <div class="flex items-start gap-3">
+                                <template x-if="!review.is_anonymous && review.reviewer?.avatar_url">
+                                    <img :src="review.reviewer.avatar_url" class="w-8 h-8 rounded-full object-cover">
+                                </template>
+                                <template x-else>
+                                    <div class="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-white text-xs font-bold">
+                                        <span x-text="review.is_anonymous ? '匿' : (review.reviewer?.username?.charAt(0) || '?')"></span>
+                                    </div>
+                                </template>
+                                <div class="flex-1">
+                                    <div class="flex justify-between items-center">
+                                        <p class="text-sm font-medium" x-text="review.is_anonymous ? '匿名用户' : review.reviewer?.username"></p>
+                                        <div class="flex text-yellow-400 text-xs">
+                                            <template x-for="i in 5">
+                                                <i :class="i <= review.overall_rating ? 'fas fa-star' : 'far fa-star'"></i>
+                                            </template>
+                                        </div>
+                                    </div>
+                                    <p class="text-xs text-gray-500" x-text="formatTimeAgo(review.created_at)"></p>
+                                    <p class="text-sm text-gray-700 mt-1" x-text="review.content || '用户未留下文字评价'"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
                 </div>
             </div>
         </div>
@@ -964,7 +1184,7 @@
             </div>
         </div>
 
-        <!-- ===================== 新增：评价模态框 ===================== -->
+        <!-- ===================== 新增：评价模态框（用于写评价）===================== -->
         <div x-show="showReviewModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50" x-transition>
             <div class="glasscard w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto" @click.away="showReviewModal = false">
                 <div class="flex justify-between items-center mb-6">
@@ -1182,6 +1402,44 @@
             </div>
         </div>
 
+        <!-- ===================== 新增：发布学习搭子模态框 ===================== -->
+        <div x-show="showBuddyModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50" x-transition>
+            <div class="glasscard w-full max-w-md p-6" @click.away="showBuddyModal = false">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-bold text-gray-800">发布学习搭子信息</h2>
+                    <button @click="showBuddyModal = false" class="text-gray-500 hover:text-gray-700"><i class="fas fa-times text-xl"></i></button>
+                </div>
+                <form @submit.prevent="submitBuddy">
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">学习目标 <span class="text-red-500">*</span></label>
+                            <input type="text" x-model="newBuddy.goal" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" placeholder="例如：考研数学、英语口语" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">学习时间段 <span class="text-red-500">*</span></label>
+                            <input type="text" x-model="newBuddy.time_slot" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" placeholder="例如：每晚7-10点、周末全天" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">城市（选填）</label>
+                            <input type="text" x-model="newBuddy.city" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" placeholder="例如：北京市">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">学习方式</label>
+                            <div class="flex space-x-4">
+                                <label class="flex items-center"><input type="radio" x-model="newBuddy.mode" value="线上" class="mr-2">线上</label>
+                                <label class="flex items-center"><input type="radio" x-model="newBuddy.mode" value="线下" class="mr-2">线下</label>
+                                <label class="flex items-center"><input type="radio" x-model="newBuddy.mode" value="均可" class="mr-2">均可</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex space-x-3 pt-6">
+                        <button type="submit" :disabled="!newBuddy.goal || !newBuddy.time_slot" class="flex-1 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white font-medium rounded-lg hover:from-green-600 hover:to-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed">发布</button>
+                        <button type="button" @click="showBuddyModal = false" class="flex-1 py-3 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition">取消</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
     </div>
 
     <!-- 通知区域 -->
@@ -1202,7 +1460,7 @@
         </template>
     </div>
 
-    <!-- Alpine.js 应用逻辑（修复消息模块+精彩时刻计数） -->
+    <!-- Alpine.js 应用逻辑（修复消息模块+精彩时刻计数+新增学习搭子功能+他人资料评价） -->
     <script>
         const SUPABASE_URL = 'https://bsxrwsgewqgeeikfeeoa.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_kABjoeJgvH8l196MDbpA-A_3YyAGNqo';
@@ -1265,7 +1523,7 @@
                 messagePollTimer: null,
                 isRegistering: false,
                 
-                // 新增：评价系统状态
+                // 评价系统状态（部分保留）
                 showReviewModal: false,
                 reviewTarget: null,
                 reviewForm: {
@@ -1292,7 +1550,7 @@
                     positive_rate: 0
                 },
                 
-                // 新增：分享系统状态
+                // 分享系统状态
                 showMatchShareModal: false,
                 shareMatchData: null,
                 moments: [],
@@ -1308,11 +1566,34 @@
                     submitting: false
                 },
 
-                // 新增：评论模态框状态
+                // 评论模态框状态
                 showCommentModal: false,
                 currentMomentComments: [],
                 currentCommentMomentId: null,
                 newCommentContent: '',
+
+                // ========== 新增：学习搭子状态 ==========
+                buddies: [],
+                filteredBuddies: [],
+                showBuddyModal: false,
+                newBuddy: {
+                    goal: '',
+                    time_slot: '',
+                    city: '',
+                    mode: '线上'
+                },
+                buddySearchInput: '',
+                buddySearchKeyword: '',
+                buddyGoalFilter: '',
+                buddyModeFilter: '',
+                sameCityActive: false,
+                savedBuddies: [],
+                savedBuddiesList: [],
+                
+                // ========== 新增：他人资料页评价状态 ==========
+                recentReviews: [],       // 最新三条评价
+                showAllReviews: false,   // 控制“查看全部”弹窗
+                allReviews: [],          // 所有评价（用于弹窗）
                 
                 // ========== 初始化 ==========
                 async init() {
@@ -1330,13 +1611,15 @@
                     await this.checkAuthStatus();
                     if (this.isAuthenticated) {
                         await this.loadUserProfile();
-                        await this.loadUserReviewStats(); // 新增
+                        await this.loadUserReviewStats();
                         await this.loadMatches();
                         await this.loadSkills();
                         await this.loadConversations();
                         await this.loadCommunityEvents();
                         await this.loadFavorites();
-                        await this.loadMoments(); // 新增
+                        await this.loadMoments();
+                        await this.loadBuddies();
+                        await this.loadSavedBuddies();
                     }
                     this.supabase.auth.onAuthStateChange((event, session) => {
                         if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
@@ -1350,6 +1633,8 @@
                             this.loadCommunityEvents();
                             this.loadFavorites();
                             this.loadMoments();
+                            this.loadBuddies();
+                            this.loadSavedBuddies();
                         } else if (event === 'SIGNED_OUT') {
                             this.resetState();
                         }
@@ -1375,11 +1660,14 @@
                     this.favoriteSkills = [];
                     this.myReviews = [];
                     this.moments = [];
+                    this.buddies = [];
+                    this.filteredBuddies = [];
+                    this.savedBuddies = [];
+                    this.savedBuddiesList = [];
                     this.stopMessagePolling();
                 },
                 
                 // ========== 原有方法（完全保留）==========
-                
                 async checkAuthStatus() {
                     try {
                         const { data: { session } } = await this.supabase.auth.getSession();
@@ -1518,6 +1806,8 @@
                         await this.loadCommunityEvents();
                         await this.loadFavorites();
                         await this.loadMoments();
+                        await this.loadBuddies();
+                        await this.loadSavedBuddies();
                         this.showNotification('success', '登录成功', '欢迎回来！');
                     } catch (error) {
                         this.showNotification('error', '登录失败', error.message);
@@ -1578,6 +1868,8 @@
                             await this.loadMatches();
                             await this.loadSkills();
                             await this.loadMoments();
+                            await this.loadBuddies();
+                            await this.loadSavedBuddies();
                             this.showNotification('success', '注册成功', '欢迎加入知舟！');
                             this.activeTab = 'profile';
                         } else if (authError) {
@@ -1618,7 +1910,6 @@
                             this.loadMockSkills();
                             return;
                         }
-                        // 修复：正确映射技能数据，避免收藏错乱
                         this.skills = data.map(skill => {
                             let tags = skill.tags || [];
                             if (typeof tags === 'string') {
@@ -1636,7 +1927,7 @@
                                 method: skill.method || '线上教学',
                                 schedule: skill.schedule || '时间灵活',
                                 created_at: skill.created_at || new Date().toISOString(),
-                                user_rating: skill.user_rating || 0 // 新增：作者评分
+                                user_rating: skill.user_rating || 0
                             };
                         });
                     } catch (error) {
@@ -1781,12 +2072,11 @@
                     this.showSameCityOnly = false;
                 },
                 
-                // ========== 收藏功能（修复数据错乱）==========
+                // ========== 收藏功能 ==========
                 
                 async loadFavorites() {
                     if (!this.currentUser) return;
                     try {
-                        // 修复：正确查询收藏记录
                         const { data, error } = await this.supabase
                             .from('favorites')
                             .select('*')
@@ -1796,7 +2086,6 @@
                         if (error) throw error;
                         this.favorites = data || [];
                         
-                        // 修复：正确加载收藏的技能详情
                         if (this.favorites.length > 0) {
                             const skillIds = this.favorites.map(f => f.target_id);
                             const { data: skills, error: skillsError } = await this.supabase
@@ -1805,7 +2094,6 @@
                                 .in('id', skillIds);
                             
                             if (!skillsError && skills) {
-                                // 修复：按收藏顺序映射，确保数据对应正确
                                 this.favoriteSkills = this.favorites.map(fav => {
                                     const skill = skills.find(s => s.id.toString() === fav.target_id.toString());
                                     if (!skill) return null;
@@ -1815,9 +2103,9 @@
                                         ...skill,
                                         tags,
                                         id: skill.id.toString(),
-                                        favorite_id: fav.id // 记录收藏ID用于取消收藏
+                                        favorite_id: fav.id
                                     };
-                                }).filter(Boolean); // 过滤掉null
+                                }).filter(Boolean);
                             }
                         } else {
                             this.favoriteSkills = [];
@@ -1841,20 +2129,15 @@
                     
                     try {
                         if (existing) {
-                            // 取消收藏
                             const { error } = await this.supabase
                                 .from('favorites')
                                 .delete()
                                 .eq('id', existing.id);
-                            
                             if (error) throw error;
-                            
-                            // 修复：正确更新本地状态
                             this.favorites = this.favorites.filter(f => f.id !== existing.id);
                             this.favoriteSkills = this.favoriteSkills.filter(s => s.id.toString() !== skillId);
                             this.showNotification('success', '已取消收藏', `你已取消收藏「${skill.title}」`);
                         } else {
-                            // 添加收藏
                             const { data, error } = await this.supabase
                                 .from('favorites')
                                 .insert([{
@@ -1864,12 +2147,8 @@
                                     created_at: new Date().toISOString()
                                 }])
                                 .select();
-                            
                             if (error) throw error;
-                            
-                            // 修复：正确更新本地状态
                             this.favorites.push(data[0]);
-                            // 重新加载收藏列表确保数据正确
                             await this.loadFavorites();
                             this.showNotification('success', '收藏成功', `「${skill.title}」已添加到我的收藏`);
                         }
@@ -1879,7 +2158,7 @@
                     }
                 },
                 
-                // ========== 匹配相关（保留原有+新增评分）==========
+                // ========== 匹配相关 ==========
                 
                 async loadMatches() {
                     if (!this.currentUser) return;
@@ -1951,7 +2230,7 @@
                     return normalizeCity(city1) === normalizeCity(city2);
                 },
                 
-                // ========== 消息相关（完全替换为稳定版）==========
+                // ========== 消息相关（完全保留）==========
                 
                 async loadConversations() {
                     if (!this.currentUser) return;
@@ -2162,7 +2441,6 @@
                     }
                 },
                 
-                // 修改：保留对话信息，不立即清空
                 sendMessage(userId, username) {
                     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
                     if (!uuidRegex.test(userId)) {
@@ -2197,7 +2475,6 @@
                     }
                 },
                 
-                // 修改：保留对话信息，不立即清空
                 async contactSkillOwner(skill) {
                     if (!this.isAuthenticated) {
                         this.showNotification('warning', '请先登录', '登录后才能联系技能所有者');
@@ -2288,7 +2565,6 @@
                     }
                 },
                 
-                // 新增：增量轮询（从第一个代码移植）
                 async pollMessagesIncremental() {
                     if (!this.currentUser) return;
                     try {
@@ -2375,7 +2651,7 @@
                         if (this.activeTab === 'messages' && this.isAuthenticated) {
                             await this.pollMessagesIncremental();
                         }
-                    }, 3000); // 3秒轮询
+                    }, 3000);
                 },
                 
                 stopMessagePolling() {
@@ -2860,30 +3136,72 @@
                     return '还没有人发起活动';
                 },
                 
-                // ========== 查看用户资料（保留原有+新增评分）==========
+                // ========== 查看用户资料（已修改：实时计算评分） ==========
                 
                 async viewProfile(userId) {
                     this.viewProfileLoading = true;
                     this.showViewProfileModal = true;
                     this.viewedUserProfile = null;
+                    this.recentReviews = [];
                     try {
+                        // 先尝试从数据库加载 profile
+                        let profile = null;
                         const { data, error } = await this.supabase
                             .from('profiles')
-                            .select('*, user_review_stats(*)')
+                            .select('*')
                             .eq('id', userId)
                             .single();
-                        
-                        if (error) {
-                            const localMatch = this.matches.find(match => match.id === userId);
-                            if (localMatch) this.viewedUserProfile = localMatch;
-                            else throw error;
+                        if (!error && data) {
+                            profile = data;
                         } else {
-                            const stats = data.user_review_stats || {};
-                            this.viewedUserProfile = {
-                                ...data,
-                                overall_rating: stats.overall_rating || 0,
-                                total_reviews: stats.total_reviews || 0
-                            };
+                            // 如果数据库加载失败，从 matches 中找
+                            const localMatch = this.matches.find(match => match.id === userId);
+                            if (localMatch) {
+                                profile = localMatch;
+                            } else {
+                                throw error || new Error('用户不存在');
+                            }
+                        }
+
+                        // 计算评分和评价数
+                        const { data: reviews, error: reviewsError } = await this.supabase
+                            .from('reviews')
+                            .select('skill_level, teaching_attitude, punctuality, communication')
+                            .eq('reviewee_id', userId);
+
+                        let totalReviews = 0;
+                        let overallRating = 0;
+                        if (!reviewsError && reviews) {
+                            totalReviews = reviews.length;
+                            if (totalReviews > 0) {
+                                let sum = 0;
+                                reviews.forEach(r => {
+                                    sum += (r.skill_level + r.teaching_attitude + r.punctuality + r.communication) / 4;
+                                });
+                                overallRating = sum / totalReviews;
+                            }
+                        }
+
+                        this.viewedUserProfile = {
+                            ...profile,
+                            overall_rating: overallRating,
+                            total_reviews: totalReviews
+                        };
+
+                        // 加载最新三条评价
+                        if (totalReviews > 0) {
+                            const { data: recent, error: recentError } = await this.supabase
+                                .from('reviews')
+                                .select(`
+                                    *,
+                                    reviewer:reviewer_id ( username, avatar_url )
+                                `)
+                                .eq('reviewee_id', userId)
+                                .order('created_at', { ascending: false })
+                                .limit(3);
+                            if (!recentError && recent) {
+                                this.recentReviews = recent;
+                            }
                         }
                     } catch (error) {
                         console.error('查看资料出错:', error);
@@ -2893,7 +3211,22 @@
                     }
                 },
                 
-                // ========== 新增：评价系统方法 ==========
+                // ========== 新增：加载全部评价（用于弹窗） ==========
+                async loadAllReviews(userId) {
+                    const { data, error } = await this.supabase
+                        .from('reviews')
+                        .select(`
+                            *,
+                            reviewer:reviewer_id ( username, avatar_url )
+                        `)
+                        .eq('reviewee_id', userId)
+                        .order('created_at', { ascending: false });
+                    if (!error && data) {
+                        this.allReviews = data;
+                    }
+                },
+                
+                // ========== 评价系统方法（保留） ==========
                 
                 async loadUserReviewStats() {
                     if (!this.currentUser) return;
@@ -2938,7 +3271,6 @@
                     }
                 },
                 
-                // 评价入口1：从聊天界面评价
                 openReviewModalFromChat() {
                     if (!this.selectedConversation) {
                         this.showNotification('warning', '请先选择对话');
@@ -2952,7 +3284,6 @@
                     this.openReviewModal(user, { type: 'skill_exchange', id: this.selectedConversationId });
                 },
                 
-                // 评价入口2：从用户资料页评价（已删除按钮，保留方法供其他调用）
                 openReviewModal(user, context = {}) {
                     this.reviewTarget = user;
                     this.reviewForm = {
@@ -3021,11 +3352,9 @@
                     }
                 },
                 
-                // 新增：查看用户全部评价
                 async viewUserReviews(userId) {
                     this.showViewProfileModal = false;
                     this.profileSubTab = 'reviews';
-                    // 这里可以扩展为查看特定用户的评价
                     await this.loadMyReviews();
                 },
                 
@@ -3077,11 +3406,10 @@
                     this.showNotification('success', '已复制', '分享文案已复制到剪贴板');
                 },
                 
-                // ========== 新增：精彩时刻方法（修复点赞/评论计数）==========
+                // ========== 新增：精彩时刻方法 ==========
                 
                 async loadMoments() {
                     try {
-                        // 1. 查询时刻列表，并附带点赞数和评论数
                         const { data: moments, error } = await this.supabase
                             .from('moments')
                             .select(`
@@ -3096,7 +3424,6 @@
 
                         if (error) throw error;
 
-                        // 2. 获取当前用户已点赞的时刻ID集合
                         let likedIds = new Set();
                         if (this.currentUser) {
                             const { data: myLikes } = await this.supabase
@@ -3106,7 +3433,6 @@
                             likedIds = new Set((myLikes || []).map(l => l.moment_id));
                         }
 
-                        // 3. 处理数据：提取计数、添加作者信息和点赞状态
                         this.moments = (moments || []).map(moment => ({
                             ...moment,
                             author_name: moment.author?.username,
@@ -3230,7 +3556,6 @@
                 },
                 
                 openMomentDetail(moment) {
-                    // 可以扩展为打开详情模态框
                     console.log('查看详情:', moment);
                 },
 
@@ -3277,10 +3602,8 @@
                         
                         if (error) throw error;
                         
-                        // 更新本地评论列表
                         await this.loadComments(this.currentCommentMomentId);
                         
-                        // 更新moment的评论数
                         const moment = this.moments.find(m => m.id === this.currentCommentMomentId);
                         if (moment) {
                             moment.comments_count++;
@@ -3294,7 +3617,7 @@
                     }
                 },
                 
-                // ========== 工具函数（完全保留）==========
+                // ========== 工具函数 ==========
                 
                 formatDate(dateString) {
                     const date = new Date(dateString);
@@ -3358,7 +3681,186 @@
                             this.notifications = this.notifications.filter(n => n.id !== id);
                         }, 300);
                     }
-                }
+                },
+                
+                // ========== 学习搭子相关方法 ==========
+                async loadBuddies() {
+                    if (!this.currentUser) return;
+                    try {
+                        const { data, error } = await this.supabase
+                            .from('study_buddies')
+                            .select(`
+                                *,
+                                profiles:user_id ( username, avatar_url )
+                            `)
+                            .eq('status', 'active')
+                            .order('created_at', { ascending: false });
+                        if (error) throw error;
+                        this.buddies = (data || []).map(b => ({
+                            ...b,
+                            username: b.profiles?.username,
+                            avatar_url: b.profiles?.avatar_url
+                        }));
+                        this.filterBuddies();
+                    } catch (error) {
+                        console.error('加载学习搭子失败:', error);
+                    }
+                },
+                
+                filterBuddies() {
+                    let filtered = this.buddies;
+                    
+                    if (this.buddySearchKeyword) {
+                        const q = this.buddySearchKeyword.toLowerCase();
+                        filtered = filtered.filter(b => 
+                            (b.goal && b.goal.toLowerCase().includes(q)) ||
+                            (b.time_slot && b.time_slot.toLowerCase().includes(q)) ||
+                            (b.city && b.city.toLowerCase().includes(q))
+                        );
+                    }
+                    
+                    if (this.buddyGoalFilter) {
+                        filtered = filtered.filter(b => b.goal === this.buddyGoalFilter);
+                    }
+                    
+                    if (this.buddyModeFilter) {
+                        filtered = filtered.filter(b => b.mode === this.buddyModeFilter);
+                    }
+                    
+                    if (this.sameCityActive) {
+                        const userCity = this.userProfile?.city;
+                        if (userCity) {
+                            filtered = filtered.filter(b => b.city && this.isSameCity(userCity, b.city));
+                        }
+                    }
+                    
+                    this.filteredBuddies = filtered;
+                },
+                
+                toggleSameCityBuddy() {
+                    if (!this.userProfile?.city) {
+                        this.showNotification('warning', '请先设置城市', '请在个人中心设置您的城市，才能使用同城筛选');
+                        this.activeTab = 'profile';
+                        this.showEditModal = true;
+                        return;
+                    }
+                    this.sameCityActive = !this.sameCityActive;
+                    this.filterBuddies();
+                },
+                
+                async submitBuddy() {
+                    if (!this.currentUser) {
+                        this.showNotification('warning', '请先登录');
+                        return;
+                    }
+                    if (!this.newBuddy.goal || !this.newBuddy.time_slot) {
+                        this.showNotification('error', '请填写目标和时间段');
+                        return;
+                    }
+                    try {
+                        const { error } = await this.supabase.from('study_buddies').insert([{
+                            user_id: this.currentUser.id,
+                            goal: this.newBuddy.goal,
+                            time_slot: this.newBuddy.time_slot,
+                            city: this.newBuddy.city || null,
+                            mode: this.newBuddy.mode
+                        }]);
+                        if (error) throw error;
+                        this.showBuddyModal = false;
+                        this.newBuddy = { goal: '', time_slot: '', city: '', mode: '线上' };
+                        this.showNotification('success', '发布成功', '你的学习搭子信息已发布');
+                        await this.loadBuddies();
+                    } catch (error) {
+                        console.error('发布失败:', error);
+                        this.showNotification('error', '发布失败', error.message);
+                    }
+                },
+                
+                contactBuddy(buddy) {
+                    if (!this.currentUser) {
+                        this.showNotification('warning', '请先登录');
+                        return;
+                    }
+                    this.sendMessage(buddy.user_id, buddy.username);
+                    this.newMessage = `你好 ${buddy.username}，我在知舟上看到你在找学习搭子（目标：${buddy.goal}），希望能一起学习！`;
+                    this.activeTab = 'messages';
+                },
+                
+                async loadSavedBuddies() {
+                    if (!this.currentUser) return;
+                    try {
+                        const { data: favs, error } = await this.supabase
+                            .from('favorites')
+                            .select('target_id')
+                            .eq('user_id', this.currentUser.id)
+                            .eq('target_type', 'buddy');
+                        if (error) throw error;
+                        this.savedBuddies = (favs || []).map(f => f.target_id);
+                        
+                        if (this.savedBuddies.length > 0) {
+                            const { data: buddies, error: buddyError } = await this.supabase
+                                .from('study_buddies')
+                                .select(`
+                                    *,
+                                    profiles:user_id ( username, avatar_url )
+                                `)
+                                .in('id', this.savedBuddies)
+                                .eq('status', 'active');
+                            if (!buddyError && buddies) {
+                                this.savedBuddiesList = buddies.map(b => ({
+                                    ...b,
+                                    username: b.profiles?.username,
+                                    avatar_url: b.profiles?.avatar_url
+                                }));
+                            }
+                        } else {
+                            this.savedBuddiesList = [];
+                        }
+                    } catch (error) {
+                        console.error('加载收藏的搭子失败:', error);
+                    }
+                },
+                
+                isSaved(buddyId) {
+                    return this.savedBuddies.includes(buddyId);
+                },
+                
+                async toggleSaveBuddy(buddy) {
+                    if (!this.currentUser) {
+                        this.showNotification('warning', '请先登录');
+                        return;
+                    }
+                    const buddyId = buddy.id;
+                    try {
+                        if (this.isSaved(buddyId)) {
+                            const { error } = await this.supabase
+                                .from('favorites')
+                                .delete()
+                                .eq('user_id', this.currentUser.id)
+                                .eq('target_type', 'buddy')
+                                .eq('target_id', buddyId);
+                            if (error) throw error;
+                            this.savedBuddies = this.savedBuddies.filter(id => id !== buddyId);
+                            this.savedBuddiesList = this.savedBuddiesList.filter(b => b.id !== buddyId);
+                            this.showNotification('success', '已取消收藏');
+                        } else {
+                            const { error } = await this.supabase
+                                .from('favorites')
+                                .insert([{
+                                    user_id: this.currentUser.id,
+                                    target_type: 'buddy',
+                                    target_id: buddyId
+                                }]);
+                            if (error) throw error;
+                            this.savedBuddies.push(buddyId);
+                            await this.loadSavedBuddies();
+                            this.showNotification('success', '已收藏');
+                        }
+                    } catch (error) {
+                        console.error('收藏操作失败:', error);
+                        this.showNotification('error', '操作失败', error.message);
+                    }
+                },
             }));
         });
     </script>
