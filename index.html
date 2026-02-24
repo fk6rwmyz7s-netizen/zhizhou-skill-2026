@@ -2,7 +2,7 @@
 <html lang="zh-CN" x-data="app()" x-cloak>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
     <title>知舟技能交换平台 · 社交版</title>
     <!-- Alpine.js -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
@@ -212,20 +212,17 @@
 </head>
 <body class="min-h-screen p-4 md:p-6">
     <div class="max-w-6xl mx-auto">
-        <!-- ===================== 导航栏（学习搭子按钮已加入）===================== -->
+        <!-- ===================== 导航栏（已恢复原始样式，仅小字改为“技能交换 · 同舟共学”）===================== -->
         <nav class="glass-card p-4 mb-6 flex justify-between items-center" x-show="isAuthenticated">
             <div class="flex items-center space-x-4">
                 <div class="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold">知</div>
                 <div>
                     <h1 class="text-xl font-bold text-gray-800">知舟技能交换</h1>
-                    <p class="text-sm text-gray-600">技能交换 · 知识共享</p>
+                    <p class="text-sm text-gray-600">技能交换 · 同舟共学</p>
                 </div>
             </div>
             <div class="flex items-center space-x-4">
-                <!-- 新增：学习搭子按钮（放在个人中心之前） -->
-                <button @click="activeTab = 'buddies'" :class="activeTab === 'buddies' ? 'text-blue-600 font-medium' : 'text-gray-600'">
-                    <i class="fas fa-users mr-2"></i>学习搭子
-                </button>
+                <button @click="activeTab = 'buddies'" :class="activeTab === 'buddies' ? 'text-blue-600 font-medium' : 'text-gray-600'"><i class="fas fa-users mr-2"></i>学习搭子</button>
                 <button @click="activeTab = 'profile'" :class="activeTab === 'profile' ? 'text-blue-600 font-medium' : 'text-gray-600'"><i class="fas fa-user mr-2"></i>个人中心</button>
                 <button @click="activeTab = 'explore'" :class="activeTab === 'explore' ? 'text-blue-600 font-medium' : 'text-gray-600'"><i class="fas fa-search mr-2"></i>技能探索</button>
                 <button @click="activeTab = 'community'" :class="activeTab === 'community' ? 'text-blue-600 font-medium' : 'text-gray-600'"><i class="fas fa-users mr-2"></i>社区活动</button>
@@ -774,38 +771,47 @@
                 </div>
             </div>
 
-            <!-- ===================== 消息中心（完全修复为稳定版）===================== -->
+            <!-- ===================== 消息中心（删除按钮悬浮显示）===================== -->
             <div x-show="activeTab === 'messages'" x-transition>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- 左侧对话列表：删除按钮悬浮显示 -->
                     <div class="glass-card p-6">
                         <h2 class="text-xl font-bold text-gray-800 mb-6">💬 对话列表</h2>
                         <div class="mb-4"><input type="text" x-model="searchConversation" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" placeholder="搜索对话..."></div>
                         <div class="space-y-2">
                             <template x-for="conversation in filteredConversations" :key="conversation.id">
-                                <div @click="selectConversation(conversation.id)" :class="{'border-blue-300 bg-blue-50': selectedConversationId === conversation.id, 'border-gray-200': selectedConversationId !== conversation.id}" class="border rounded-lg p-2.5 cursor-pointer hover:border-blue-300 transition flex items-start relative group">
-                                    <button @click.stop="deleteConversation(conversation.id, conversation.username)" class="absolute top-2 right-2 w-6 h-6 rounded-full bg-gray-100 hover:bg-red-100 hover:text-red-600 text-gray-500 flex items-center justify-center transition-all duration-200 opacity-0 group-hover:opacity-100" title="删除对话"><i class="fas fa-times text-xs"></i></button>
-                                    <template x-if="conversation.avatar_url">
-                                        <img :src="conversation.avatar_url" class="w-10 h-10 rounded-full object-cover" alt="avatar">
-                                    </template>
-                                    <template x-else>
-                                        <div :class="['w-10 h-10 rounded-full flex items-center justify-center text-white font-bold bg-gradient-to-r', conversation.avatarColor || 'from-blue-500 to-blue-600']"><span x-text="conversation.username.charAt(0)"></span></div>
-                                    </template>
-                                    <div class="ml-2 flex-1 min-w-0">
-                                        <div class="flex justify-between items-start">
-                                            <div>
-                                                <h3 class="font-bold text-gray-800 text-sm" x-text="conversation.username"></h3>
-                                                <p x-show="conversation.skillTitle" class="text-[10px] text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded inline-block mt-0.5"><i class="fas fa-graduation-cap mr-0.5"></i><span x-text="conversation.skillTitle"></span></p>
+                                <!-- 对话条目：外层添加 group 类用于悬浮控制 -->
+                                <div @click="selectConversation(conversation.id)" :class="{'border-blue-300 bg-blue-50': selectedConversationId === conversation.id, 'border-gray-200': selectedConversationId !== conversation.id}" class="group border rounded-lg p-3 flex items-center cursor-pointer hover:border-blue-300 transition relative">
+                                    <!-- 头像和内容区域 (flex-1) -->
+                                    <div class="flex items-start flex-1 min-w-0">
+                                        <template x-if="conversation.avatar_url">
+                                            <img :src="conversation.avatar_url" class="w-10 h-10 rounded-full object-cover" alt="avatar">
+                                        </template>
+                                        <template x-else>
+                                            <div :class="['w-10 h-10 rounded-full flex items-center justify-center text-white font-bold bg-gradient-to-r', conversation.avatarColor || 'from-blue-500 to-blue-600']"><span x-text="conversation.username.charAt(0)"></span></div>
+                                        </template>
+                                        <div class="ml-2 flex-1 min-w-0">
+                                            <div class="flex justify-between items-start">
+                                                <div>
+                                                    <h3 class="font-bold text-gray-800 text-sm" x-text="conversation.username"></h3>
+                                                    <p x-show="conversation.skillTitle" class="text-[10px] text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded inline-block mt-0.5"><i class="fas fa-graduation-cap mr-0.5"></i><span x-text="conversation.skillTitle"></span></p>
+                                                </div>
+                                                <span x-show="conversation.unread > 0" class="bg-red-500 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center"><span x-text="conversation.unread"></span></span>
                                             </div>
-                                            <span x-show="conversation.unread > 0" class="bg-red-500 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center"><span x-text="conversation.unread"></span></span>
+                                            <p class="text-gray-500 text-xs truncate max-w-full mt-0.5" x-text="conversation.lastMessage"></p>
+                                            <div class="flex justify-between items-center mt-1"><span class="text-gray-400 text-[10px]" x-text="formatTime(conversation.timestamp)"></span><span x-show="conversation.skillId" class="text-blue-500 text-[10px]"><i class="fas fa-link"></i></span></div>
                                         </div>
-                                        <p class="text-gray-500 text-xs truncate max-w-full mt-0.5" x-text="conversation.lastMessage"></p>
-                                        <div class="flex justify-between items-center mt-1"><span class="text-gray-400 text-[10px]" x-text="formatTime(conversation.timestamp)"></span><span x-show="conversation.skillId" class="text-blue-500 text-[10px]"><i class="fas fa-link"></i></span></div>
                                     </div>
+                                    <!-- 删除按钮（默认隐藏，悬浮显示） -->
+                                    <button @click.stop="deleteConversation(conversation.id, conversation.username)" class="w-8 h-8 rounded-full bg-gray-100 hover:bg-red-100 flex items-center justify-center ml-2 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" title="删除对话">
+                                        <i class="fas fa-times text-gray-500"></i>
+                                    </button>
                                 </div>
                             </template>
                         </div>
                         <div x-show="conversations.length === 0" class="text-center py-8"><i class="fas fa-comments text-gray-300 text-4xl mb-4"></i><p class="text-gray-500">暂无对话</p><p class="text-gray-400 text-sm mt-2">去技能匹配中联系新的伙伴</p><button @click="activeTab = 'profile'" class="mt-4 px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-sm font-medium rounded-lg hover:from-blue-600 hover:to-blue-700 transition"><i class="fas fa-search mr-2"></i>查找伙伴</button></div>
                     </div>
+                    <!-- 右侧聊天窗口（保持不变） -->
                     <div class="glass-card p-6 md:col-span-2 flex flex-col">
                         <div x-show="selectedConversationId">
                             <div class="border-b pb-4 mb-4">
@@ -820,11 +826,17 @@
                                         <div class="ml-4"><h3 class="font-bold text-gray-800" x-text="selectedConversation ? selectedConversation.username : ''"></h3><p class="text-gray-600 text-sm">在线</p></div>
                                     </div>
                                     <div class="flex items-center space-x-3">
-                                        <!-- 新增：评价按钮（在聊天界面中） -->
+                                        <!-- 评价按钮 -->
                                         <button @click="openReviewModalFromChat()" class="flex items-center px-4 py-2 bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-sm font-medium rounded-lg hover:from-yellow-600 hover:to-orange-600 transition shadow" title="评价对方">
                                             <i class="fas fa-star mr-2"></i>评价
                                         </button>
+                                        <!-- 视频教室按钮 -->
                                         <button @click="openVideoRoomModal" :disabled="!selectedConversation" :class="{ 'opacity-50 cursor-not-allowed': !selectedConversation }" class="flex items-center px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white text-sm font-medium rounded-lg hover:from-green-600 hover:to-green-700 transition shadow" title="创建视频教室"><i class="fas fa-video mr-2"></i><span>视频教室</span></button>
+                                        <!-- 清空聊天记录按钮 -->
+                                        <button @click="confirmClearChat" class="px-3 py-2 text-sm bg-gray-100 rounded-lg" title="清空聊天记录">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                        <!-- 关闭对话按钮 -->
                                         <button @click="selectedConversationId = null" class="text-gray-500 hover:text-gray-700 p-2" title="关闭对话"><i class="fas fa-times text-xl"></i></button>
                                     </div>
                                 </div>
@@ -851,7 +863,7 @@
                 </div>
             </div>
 
-            <!-- ===================== 学习搭子主页面（已按讨论修改）===================== -->
+            <!-- ===================== 学习搭子主页面（筛选栏已修改，卡片容器已优化）===================== -->
             <div x-show="activeTab === 'buddies'" x-transition>
                 <div class="glass-card p-6 mb-6">
                     <div class="flex justify-between items-center">
@@ -863,37 +875,35 @@
                     <!-- 新增标语 -->
                     <p class="text-gray-600 mt-2 mb-4 italic">一个人学得快，一群人学得远</p>
                     
-                    <!-- 筛选栏：搜索框 + 目标 + 方式 + 同城（无清空按钮） -->
-                    <div class="flex flex-wrap items-center gap-3 mt-2">
-                        <!-- 搜索框（左侧，flex-1） -->
-                        <div class="flex-1 min-w-[200px]">
-                            <input type="text" x-model="buddySearchInput" @input.debounce.300ms="buddySearchKeyword = buddySearchInput; filterBuddies()" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition" placeholder="搜索目标、城市或关键词">
+                    <!-- 筛选栏：搜索框 + 目标 + 方式 + 同城（移动端垂直排列，pc水平） -->
+                    <div class="flex flex-col gap-2 p-2 sm:flex-row sm:items-center">
+                        <!-- 搜索框（flex-1） -->
+                        <input type="text" x-model="buddySearchInput" @input.debounce.300ms="buddySearchKeyword = buddySearchInput; filterBuddies()" class="w-full px-3 py-2 border rounded text-sm" placeholder="搜索目标、城市或关键词">
+                        <div class="flex gap-2">
+                            <!-- 目标下拉框 -->
+                            <select x-model="buddyGoalFilter" @change="filterBuddies" class="flex-1 min-w-[80px] px-3 py-2 border rounded text-sm">
+                                <option value="">目标</option>
+                                <option value="考研">考研</option>
+                                <option value="英语">英语</option>
+                                <option value="考公">考公</option>
+                                <option value="编程">编程</option>
+                                <option value="其他">其他</option>
+                            </select>
+                            <!-- 方式下拉框 -->
+                            <select x-model="buddyModeFilter" @change="filterBuddies" class="flex-1 min-w-[80px] px-3 py-2 border rounded text-sm">
+                                <option value="">方式</option>
+                                <option value="线上">线上</option>
+                                <option value="线下">线下</option>
+                                <option value="均可">均可</option>
+                            </select>
+                            <!-- 同城开关（点击高亮） -->
+                            <button @click="toggleSameCityBuddy" :class="sameCityActive ? 'bg-blue-600 text-white border-blue-600' : 'border-gray-300 text-gray-700 hover:bg-gray-50'" class="px-4 py-2 border rounded text-sm whitespace-nowrap">同城</button>
                         </div>
-                        <!-- 目标下拉框 -->
-                        <select x-model="buddyGoalFilter" @change="filterBuddies" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition">
-                            <option value="">目标</option>
-                            <option value="考研">考研</option>
-                            <option value="英语">英语</option>
-                            <option value="考公">考公</option>
-                            <option value="编程">编程</option>
-                            <option value="其他">其他</option>
-                        </select>
-                        <!-- 方式下拉框 -->
-                        <select x-model="buddyModeFilter" @change="filterBuddies" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition">
-                            <option value="">方式</option>
-                            <option value="线上">线上</option>
-                            <option value="线下">线下</option>
-                            <option value="均可">均可</option>
-                        </select>
-                        <!-- 同城开关（点击高亮） -->
-                        <button @click="toggleSameCityBuddy" :class="sameCityActive ? 'bg-blue-600 text-white border-blue-600' : 'border-gray-300 text-gray-700 hover:bg-gray-50'" class="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition flex items-center">
-                            <i class="fas fa-map-marker-alt mr-2"></i> 同城
-                        </button>
                     </div>
                 </div>
 
-                <!-- 搭子列表 -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- 搭子列表容器（新加的grid样式） -->
+                <div class="grid grid-cols-1 gap-3 p-2 sm:grid-cols-2 lg:grid-cols-3">
                     <template x-for="buddy in filteredBuddies" :key="buddy.id">
                         <div class="glass-card p-5 hover:shadow-lg transition">
                             <div class="flex items-center gap-3 mb-3">
@@ -912,19 +922,11 @@
                                 <span class="inline-block px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm mr-2" x-text="buddy.goal"></span>
                                 <span class="inline-block px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-sm" x-text="buddy.mode"></span>
                             </div>
-                            <p class="text-gray-600 text-sm mb-2">
-                                <i class="far fa-clock mr-1"></i><span x-text="buddy.time_slot"></span>
-                            </p>
-                            <p x-show="buddy.city" class="text-gray-500 text-sm mb-4">
-                                <i class="fas fa-map-marker-alt mr-1"></i><span x-text="buddy.city"></span>
-                            </p>
+                            <p class="text-gray-600 text-sm mb-2"><i class="far fa-clock mr-1"></i><span x-text="buddy.time_slot"></span></p>
+                            <p x-show="buddy.city" class="text-gray-500 text-sm mb-4"><i class="fas fa-map-marker-alt mr-1"></i><span x-text="buddy.city"></span></p>
                             <div class="flex gap-2">
-                                <button @click="contactBuddy(buddy)" class="flex-1 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-medium rounded-lg hover:from-blue-600 hover:to-blue-700 transition text-sm">
-                                    <i class="fas fa-comment mr-1"></i>联系搭子
-                                </button>
-                                <button @click="toggleSaveBuddy(buddy)" class="px-3 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50 transition">
-                                    <i :class="isSaved(buddy.id) ? 'fas fa-star text-yellow-500' : 'far fa-star'"></i>
-                                </button>
+                                <button @click="contactBuddy(buddy)" class="flex-1 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-medium rounded-lg hover:from-blue-600 hover:to-blue-700 transition text-sm"><i class="fas fa-comment mr-1"></i>联系搭子</button>
+                                <button @click="toggleSaveBuddy(buddy)" class="px-3 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50 transition"><i :class="isSaved(buddy.id) ? 'fas fa-star text-yellow-500' : 'far fa-star'"></i></button>
                             </div>
                         </div>
                     </template>
@@ -939,7 +941,7 @@
             </div>
         </div>
 
-        <!-- ===================== 所有模态框（包括新增的）===================== -->
+        <!-- ===================== 所有模态框（完全保留原有）===================== -->
         
         <!-- 编辑资料模态框（完全保留） -->
         <div x-show="showEditModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50" x-transition>
@@ -1460,7 +1462,7 @@
         </template>
     </div>
 
-    <!-- Alpine.js 应用逻辑（修复消息模块+精彩时刻计数+新增学习搭子功能+他人资料评价） -->
+    <!-- Alpine.js 应用逻辑（保留全部原有方法，并新增 confirmClearChat / clearChatMessages） -->
     <script>
         const SUPABASE_URL = 'https://bsxrwsgewqgeeikfeeoa.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_kABjoeJgvH8l196MDbpA-A_3YyAGNqo';
@@ -3859,6 +3861,31 @@
                     } catch (error) {
                         console.error('收藏操作失败:', error);
                         this.showNotification('error', '操作失败', error.message);
+                    }
+                },
+
+                // ========== 新增：清空聊天记录相关方法 ==========
+                confirmClearChat() {
+                    if (!this.selectedConversation) return;
+                    if (confirm('确定清空与 ' + this.selectedConversation.username + ' 的所有消息吗？')) {
+                        this.clearChatMessages();
+                    }
+                },
+
+                async clearChatMessages() {
+                    const otherId = this.selectedConversation.userId;
+                    const { error } = await this.supabase
+                        .from('messages')
+                        .delete()
+                        .or(`and(sender_id.eq.${this.currentUser.id},receiver_id.eq.${otherId}),and(sender_id.eq.${otherId},receiver_id.eq.${this.currentUser.id})`);
+                    if (!error) {
+                        this.selectedConversationMessages = [];
+                        this.showNotification('success', '聊天记录已清空');
+                        // 更新对话列表的最后一条消息
+                        const conv = this.conversations.find(c => c.id === this.selectedConversationId);
+                        if (conv) conv.lastMessage = '暂无消息';
+                    } else {
+                        this.showNotification('error', '清空失败', error.message);
                     }
                 },
             }));
